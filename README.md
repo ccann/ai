@@ -1,4 +1,4 @@
-ai-classic
-==========
+ai
+==
 
-classical artificial intelligence algorithms implemented in C++ (mostly for classes)
+algorithms from Russell and Norvig implemented in C++ (mostly for classes)

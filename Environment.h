@@ -1,5 +1,7 @@
 /*  Environment.h
  *  Created by ablumer on 2/19/13.
+ *
+ * DISTRIBUTED WITH PERMISSION; ALL RIGHT RESERVED TO ANSELM BLUMER
  */
 // LOCSIZE defines the size of the grid in which the agent moves
 // WALLSIZE defines the size of the grid giving the locations of the walls

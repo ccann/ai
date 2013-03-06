@@ -7,10 +7,11 @@
  *        e.g. function getActions populates the list as a FIFO queue. This means that the 
  *        algorithm will always go North before any other action (unless the previous action was 
  *        South, in which case it will go West).
+ * 
+ * SEE figure 4.21 in Russell and Norvig 3e for algorithm OnlineDFSAgent
+ * SEE figure 4.19 for environment
  *
- *        Moreover, the algorithm will loop infinitely if it doesn't find the goal state but gets
- *        to the last element in unbacktracked[s']. The algorithm in 4.21 doesn't account for this
- *        either, as it always adds s to the front of unbacktracked[s'] EVEN DURING backtracking.
+ * :TODO: add graphical depiction of state traversal
  *
  */
 
@@ -22,6 +23,7 @@
 
 using namespace std;
 
+// 
 #define LENGTH LOCSIZE*LOCSIZE
 
 list<Action> untried[LENGTH];
@@ -30,20 +32,19 @@ Location s;
 Action a;
 Location result[LENGTH*4];
 
-// transforms loc into an array index
-int indexify(Location loc){
-  return (loc.x * 3) + loc.y;
+// returns location as an integer for indexing an array
+int locToIndex(Location loc){
+  return (loc.x * LOCSIZE) + loc.y;
 }
 
-// index into the result array by location and action
-int indexIntoResult(Location loc, Action ac){
-  return (indexify(loc) + (10*ac));
+// returns location and action as an integer for indexing an array
+int locAcToIndex(Location loc, Action ac){
+  return (locToIndex(loc) + (10*ac));
 }
 
-// returns an Action list from the actions in ActStruct ac
+// returns the list of available actions from those in an ActStruct
 list<Action> getActions(ActStruct ac){
   list<Action> actions;
- 
   if (ac.N == 1){ actions.push_back(N); }
   if (ac.W == 1){ actions.push_back(W); }
   if (ac.S == 1){ actions.push_back(S); }
@@ -51,8 +52,8 @@ list<Action> getActions(ActStruct ac){
   return actions;
 }
 
-// turns an Action into a string for printing purposes
-string report(Action a) {
+// returns the string representation of an action
+string reportAction(Action a) {
   string retval;
   switch ( a ) {
   case N: return "N";
@@ -64,7 +65,7 @@ string report(Action a) {
   }
 }
 
-// get the action that takes you in the opposite direction of a
+// return the opposite cardinal direction
 Action getOppositeAction( Action a ){
   switch ( a ) {
   case N: return S;
@@ -77,19 +78,22 @@ Action getOppositeAction( Action a ){
 // online Depth-first-search agent algorithm
 Action onlineDFSAgent( Location loc, Environment env)
 {
-  int i = indexify(loc);
-
+  int i = locToIndex(loc);
   cout << "s': (" << loc.x << "," << loc.y << ") s: (" << s.x << "," << s.y << ") action: " ;
-  if (env.Goal_Test(loc)){
+
+  if (env.Goal_Test(loc)) { // found goal?
     return T;
   }
 
-  if (binary_search (untried[i].begin(), untried[i].end(), T)) { // new state
+  // if list of untried states is empty...
+  if (binary_search(untried[i].begin(), untried[i].end(), T)) { 
     untried[i] = getActions(env.Actions(loc)); 
     untried[i].remove(getOppositeAction(a));
   }
-  if (s.x != -1) {
-    result[indexIntoResult(s, a)] = loc;
+
+  // if previous state not null...
+  if (s.x != -1) { 
+    result[locAcToIndex(s, a)] = loc;
     unbacktracked[i].push_back(s);
   }
 
@@ -99,39 +103,40 @@ Action onlineDFSAgent( Location loc, Environment env)
     if (unbacktracked[i].empty()) {
       return T;
     }
+    // otherwise take action that backtracks to previous state
     else { 
-      // find the action that backtracks to previous state
       Location unback = unbacktracked[i].front();
       unbacktracked[i].pop_front();
       for (int actInt = N; actInt != T; actInt++) {
         Action act = static_cast<Action>(actInt);
-        Location temp = result[indexIntoResult(unback, act)];
-      
-        if ((temp.x == loc.x) && (temp.y == loc.y)) {
+        Location t = result[locAcToIndex(unback, act)];
+        if ((t.x == loc.x) && (t.y == loc.y)) {
           a = getOppositeAction(act);
           break;            
         }
       }
     }
   }
+
+  // otherwise try the next untried action
   else {
     a = untried[i].front();
     untried[i].pop_front();
   }
-  s = loc;
-  return a;
+
+  s = loc;  // set previous state to current state
+  return a; 
   
 }
 
 int main() {
 
   Environment env;
-  
-  Location dummy;
-  dummy.x = -2;
-  dummy.y = -2;
+  Location startLoc;
+  startLoc.x = 0;
+  startLoc.y = 0;
 
-  // initialize untried with lists of Action T (to distinguish empty vs. never used)
+  // initialize untried with lists of T (to distinguish empty vs. never used)
   for (int i = 0; i < LENGTH; i++) {
     list<Action> blankList;
     blankList.push_back(T);
@@ -142,28 +147,21 @@ int main() {
   s.x = -1;
   s.y = -1;
 
-  // initialize result array
+  // initialize members of result array to null location
   for (int i = 0; i < LENGTH*4; i++){
-    result[i] = dummy;
+    result[i] = s;
   }
 
-  // start at location (0,0)
-  Location startLoc;
-  startLoc.x = 0;
-  startLoc.y = 0;
-
- 
   // perform online DFS until reaching the goal state
   Action ra;
   while (ra != T) {
     ra = onlineDFSAgent(startLoc, env);
-    cout << report( ra ) << endl;  
+    cout << reportAction( ra ) << endl;  
     Location newLoc = env.Result( startLoc, ra ); 
     startLoc = newLoc;
   }
 
   return 1;
-  
 }
 
 

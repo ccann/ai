@@ -1,5 +1,7 @@
 /*  Environment.cpp
  *  Created by ablumer on 2/19/13.
+ * 
+ * DISTRIBUTED WITH PERMISSION; ALL RIGHT RESERVED TO ANSELM BLUMER
  */
 
 #include "Environment.h"
