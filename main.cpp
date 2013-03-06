@@ -82,6 +82,7 @@ Action onlineDFSAgent( Location loc, Environment env)
   cout << "s': (" << loc.x << "," << loc.y << ") s: (" << s.x << "," << s.y << ") action: " ;
 
   if (env.Goal_Test(loc)) { // found goal?
+    cout << "\nAT GOAL STATE ";
     return T;
   }
 
@@ -153,12 +154,11 @@ int main() {
   }
 
   // perform online DFS until reaching the goal state
-  Action ra;
-  while (ra != T) {
-    ra = onlineDFSAgent(startLoc, env);
-    cout << reportAction( ra ) << endl;  
-    Location newLoc = env.Result( startLoc, ra ); 
-    startLoc = newLoc;
+  Action action;
+  while (action != T) {
+    action = onlineDFSAgent(startLoc, env);
+    cout << reportAction( action ) << endl;  
+    startLoc = env.Result( startLoc, action ); 
   }
 
   return 1;
