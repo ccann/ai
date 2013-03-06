@@ -28,6 +28,17 @@ list<Action> untried[LENGTH];
 list<Location> unbacktracked[LENGTH];
 Location s;
 Action a;
+Location result[LENGTH*4];
+
+// transforms loc into an array index
+int indexify(Location loc){
+  return (loc.x * 3) + loc.y;
+}
+
+// index into the result array by location and action
+int indexIntoResult(Location loc, Action ac){
+  return (indexify(loc) + (10*ac));
+}
 
 // returns an Action list from the actions in ActStruct ac
 list<Action> getActions(ActStruct ac){
@@ -38,11 +49,6 @@ list<Action> getActions(ActStruct ac){
   if (ac.S == 1){ actions.push_back(S); }
   if (ac.E == 1){ actions.push_back(E); }
   return actions;
-}
-
-// transforms loc into an array index
-int indexify(Location loc){
-  return (loc.x * 3) + loc.y;
 }
 
 // turns an Action into a string for printing purposes
@@ -83,6 +89,7 @@ Action onlineDFSAgent( Location loc, Environment env)
     untried[i].remove(getOppositeAction(a));
   }
   if (s.x != -1) {
+    result[indexIntoResult(s, a)] = loc;
     unbacktracked[i].push_back(s);
   }
 
@@ -98,10 +105,11 @@ Action onlineDFSAgent( Location loc, Environment env)
       unbacktracked[i].pop_front();
       for (int actInt = N; actInt != T; actInt++) {
         Action act = static_cast<Action>(actInt);
-        Location newLoc = env.Result(loc, act);
-        if ((newLoc.x == unback.x) && (newLoc.y == unback.y)) {
-          a = act;
-          break;
+        Location temp = result[indexIntoResult(unback, act)];
+      
+        if ((temp.x == loc.x) && (temp.y == loc.y)) {
+          a = getOppositeAction(act);
+          break;            
         }
       }
     }
@@ -119,6 +127,10 @@ int main() {
 
   Environment env;
   
+  Location dummy;
+  dummy.x = -2;
+  dummy.y = -2;
+
   // initialize untried with lists of Action T (to distinguish empty vs. never used)
   for (int i = 0; i < LENGTH; i++) {
     list<Action> blankList;
@@ -130,11 +142,17 @@ int main() {
   s.x = -1;
   s.y = -1;
 
+  // initialize result array
+  for (int i = 0; i < LENGTH*4; i++){
+    result[i] = dummy;
+  }
+
   // start at location (0,0)
   Location startLoc;
   startLoc.x = 0;
   startLoc.y = 0;
 
+ 
   // perform online DFS until reaching the goal state
   Action ra;
   while (ra != T) {
