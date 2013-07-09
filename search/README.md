@@ -1,13 +1,4 @@
 # search
 
-A Clojure library designed to ... well, that part is up to you.
+Clojure library supplying various algorithms and functions from Russell and Norvig's AI: A Modern Approach
 
-## Usage
-
-FIXME
-
-## License
-
-Copyright © 2013 FIXME
-
-Distributed under the Eclipse Public License, the same as Clojure.
